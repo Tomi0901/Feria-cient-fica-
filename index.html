@@ -81,7 +81,7 @@
         position: fixed;
         top: 0;
         left: 0;
-        width: 320px;
+        width: 300px;
         height: 100vh;
         background: #000;
         border-right: 2px solid #222;
@@ -91,7 +91,7 @@
     }
 
     #menu h1 {
-        font-size: 1.45rem;
+        font-size: 1.4rem;
         line-height: 1.3;
         margin-top: 0;
         margin-bottom: 20px;
@@ -104,7 +104,7 @@
     #menu h3 {
         margin-top: 20px;
         margin-bottom: 10px;
-        color: #ffffff;
+        color: #0099ff;
         font-size: 0.95rem;
     }
 
@@ -117,16 +117,13 @@
         border: 1px solid #444;
         cursor: pointer;
         border-radius: 6px;
-        font-size: 15px;
+        font-size: 14px;
         transition: 0.2s;
+        font-weight: bold;
     }
 
     #menu button:hover {
         background: #333;
-    }
-
-    #menu button.active {
-        background: #0066cc;
         border-color: #0099ff;
     }
 
@@ -139,7 +136,7 @@
         border: none;
         cursor: pointer;
         border-radius: 6px;
-        font-size: 15px;
+        font-size: 14px;
         font-weight: bold;
         transition: 0.2s;
     }
@@ -155,12 +152,39 @@
         background: #1a1a1a;
         border-left: 3px solid #0099ff;
         border-radius: 4px;
-        font-size: 13px;
-        line-height: 1.6;
+        font-size: 12px;
+        line-height: 1.8;
     }
 
     #status strong {
         color: #0099ff;
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    #status-text {
+        display: block;
+        font-size: 13px;
+        margin-bottom: 12px;
+        font-weight: bold;
+    }
+
+    .freq-item {
+        display: flex;
+        align-items: center;
+        margin: 5px 0;
+        font-size: 13px;
+    }
+
+    .freq-item .arrow {
+        font-size: 16px;
+        margin-right: 8px;
+        min-width: 20px;
+    }
+
+    .freq-item .freq-value {
+        color: #00ff00;
+        font-weight: bold;
     }
 
     /* ---------------------- AUTORES ---------------------- */
@@ -168,56 +192,34 @@
         margin-top: 25px;
         padding-top: 15px;
         border-top: 1px solid #333;
-        font-size: 11px;
+        font-size: 10px;
         line-height: 1.5;
-        color: #cccccc;
+        color: #999;
         word-break: break-word;
     }
 
     #credits strong {
         color: #ffffff;
+        font-size: 11px;
     }
 
     /* ---------------------- CANVAS ---------------------- */
     #view {
         position: absolute;
-        left: 320px;
+        left: 300px;
         top: 0;
-        width: calc(100vw - 320px);
+        width: calc(100vw - 300px);
         height: 100vh;
         background: black;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 
     canvas {
         width: 100%;
         height: 100%;
         display: block;
-    }
-
-    /* ---------------------- INFO OVERLAY ---------------------- */
-    #info-overlay {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        background: rgba(0, 0, 0, 0.8);
-        border: 1px solid #333;
-        border-radius: 8px;
-        padding: 15px 20px;
-        font-size: 14px;
-        color: #aaa;
-        pointer-events: none;
-        z-index: 50;
-    }
-
-    #info-overlay .freq-info {
-        margin: 5px 0;
-        font-family: monospace;
-    }
-
-    #info-overlay .freq-info strong {
-        color: #0099ff;
-        min-width: 80px;
-        display: inline-block;
     }
 </style>
 </head>
@@ -235,12 +237,12 @@
 
         <p>
             La exposición a luces intermitentes puede provocar molestias visuales,
-            dolor de cabeza y mareos.
+            dolor de cabeza, mareos y convulsiones.
         </p>
 
         <p>
-            Si tienes antecedentes de epilepsia fotosensible, migrañas o
-            sensibilidad a la luz, se recomienda <strong>no continuar</strong>.
+            Si tienes antecedentes de <strong>epilepsia fotosensible</strong>, migrañas o
+            sensibilidad a la luz, se recomienda <strong>NO continuar</strong>.
         </p>
 
         <button onclick="closeWarning()">
@@ -249,71 +251,79 @@
     </div>
 </div>
 
-<!-- MENÚ -->
+<!-- MENÚ LATERAL -->
 <div id="menu">
-    <h1>
-        SSVEP<br>
-        4 Estímulos Sincronizados
-    </h1>
+    <h1>🧠 SSVEP</h1>
 
-    <h3>▶ Estímulos Parpadeantes</h3>
-    <button onclick="startStimuli()" class="active">Iniciar Estímulos</button>
-    <button id="stop-button" onclick="stopStimuli()">Detener</button>
+    <h3>▶ Control</h3>
+    <button onclick="startStimuli()">▶ INICIAR</button>
+    <button id="stop-button" onclick="stopStimuli()">⏹ DETENER</button>
 
+    <!-- ESTADO Y FRECUENCIAS -->
     <div id="status">
-        <strong>Estado:</strong><br>
-        <span id="status-text">Detenido</span><br><br>
-        <strong>Frecuencias:</strong><br>
-        ↑ Arriba: 10 Hz<br>
-        ← Izquierda: 15 Hz<br>
-        → Derecha: 20 Hz<br>
-        ↓ Abajo: 12 Hz
+        <strong>Estado:</strong>
+        <span id="status-text">🔴 Detenido</span>
+
+        <strong style="margin-top: 12px;">Frecuencias SSVEP:</strong>
+        
+        <div class="freq-item">
+            <span class="arrow">⬆️</span>
+            <span>Adelante:</span>
+            <span class="freq-value">10 Hz</span>
+        </div>
+        
+        <div class="freq-item">
+            <span class="arrow">⬇️</span>
+            <span>Atrás:</span>
+            <span class="freq-value">12 Hz</span>
+        </div>
+        
+        <div class="freq-item">
+            <span class="arrow">⬅️</span>
+            <span>Izquierda:</span>
+            <span class="freq-value">15 Hz</span>
+        </div>
+        
+        <div class="freq-item">
+            <span class="arrow">➡️</span>
+            <span>Derecha:</span>
+            <span class="freq-value">20 Hz</span>
+        </div>
     </div>
 
-    <h3>⚙ Configuración</h3>
-    <label style="display: block; margin: 10px 0; font-size: 13px;">
-        <input type="checkbox" id="show-arrows" checked> Mostrar flechas
+    <h3>⚙️ Opciones</h3>
+    <label style="display: block; margin: 10px 0; font-size: 12px; cursor: pointer;">
+        <input type="checkbox" id="show-freq" checked> Mostrar frecuencias
     </label>
-    <label style="display: block; margin: 10px 0; font-size: 13px;">
-        <input type="checkbox" id="show-info" checked> Mostrar info
+    <label style="display: block; margin: 10px 0; font-size: 12px; cursor: pointer;">
+        <input type="checkbox" id="show-borders" checked> Mostrar bordes
     </label>
 
     <!-- AUTORES Y PROFESORES -->
     <div id="credits">
-        <strong>Autores:</strong><br>
-        Bravo, T. – t.bravod@udd.cl<br>
-        Burgos, V. – v.burgosb@udd.cl<br>
-        Yabrudy, E. – e.yabrudyr@udd.cl
-
+        <strong>Autores:</strong>
+        Bravo, T.<br>
+        Burgos, V.<br>
+        Yabrudy, E.
         <br><br>
-
-        <strong>Profesores guía:</strong><br>
-        Gustavo Adolfo Castro P.<br>
-        gustavo.castro@udd.cl<br><br>
-
-        René Ignacio Pino P.<br>
-        rene.pino@udd.cl
+        <strong>Profesores guía:</strong>
+        <br>Gustavo Adolfo Castro P.
+        <br>René Ignacio Pino P.
     </div>
 </div>
 
 <!-- CANVAS -->
 <div id="view">
     <canvas id="canvas"></canvas>
-    <div id="info-overlay">
-        <div class="freq-info"><strong>↑ Arriba</strong>: 10 Hz</div>
-        <div class="freq-info"><strong>← Izq</strong>: 15 Hz</div>
-        <div class="freq-info"><strong>→ Der</strong>: 20 Hz</div>
-        <div class="freq-info"><strong>↓ Abajo</strong>: 12 Hz</div>
-    </div>
 </div>
 
 <script>
-// ---------------------- ADVERTENCIA ----------------------
+// ==================== ADVERTENCIA ====================
 function closeWarning() {
     document.getElementById("warning-overlay").style.display = "none";
 }
 
-// ---------------------- CANVAS ----------------------
+// ==================== CANVAS ====================
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
 let animation = null;
@@ -326,22 +336,65 @@ function resize() {
 resize();
 window.addEventListener("resize", resize);
 
-// ---------------------- CONFIGURACIÓN DE ESTÍMULOS ----------------------
+// ==================== CONFIGURACIÓN DE ESTÍMULOS ====================
 const stimuli = [
-    { freq: 10, direction: "up", x: 0.5, y: 0.2, arrow: "↑" },
-    { freq: 15, direction: "left", x: 0.2, y: 0.5, arrow: "←" },
-    { freq: 20, direction: "right", x: 0.8, y: 0.5, arrow: "→" },
-    { freq: 12, direction: "down", x: 0.5, y: 0.8, arrow: "↓" }
+    { 
+        id: "up",
+        freq: 10, 
+        direction: "up", 
+        label: "⬆️ ADELANTE",
+        x: 0.5, 
+        y: 0.25,
+        color: "#FF6B6B"
+    },
+    { 
+        id: "down",
+        freq: 12, 
+        direction: "down", 
+        label: "⬇️ ATRÁS",
+        x: 0.5, 
+        y: 0.75,
+        color: "#4ECDC4"
+    },
+    { 
+        id: "left",
+        freq: 15, 
+        direction: "left", 
+        label: "⬅️ IZQUIERDA",
+        x: 0.25, 
+        y: 0.5,
+        color: "#FFE66D"
+    },
+    { 
+        id: "right",
+        freq: 20, 
+        direction: "right", 
+        label: "➡️ DERECHA",
+        x: 0.75, 
+        y: 0.5,
+        color: "#95E1D3"
+    }
 ];
 
-// ---------------------- FUNCIÓN PARA DIBUJAR FLECHAS ----------------------
-function drawArrow(x, y, size, direction, visible, opacity = 1) {
+// ==================== CALCULAR VISIBILIDAD ====================
+function calculateSSVEPVisibility(time, freq) {
+    const period = 1000 / freq;
+    const phase = (time % period) / period;
+    return phase < 0.5 ? 1 : 0;
+}
+
+// ==================== DIBUJAR FLECHA GRANDE ====================
+function drawLargeArrow(x, y, size, direction, isVisible, color) {
     ctx.save();
-    ctx.globalAlpha = visible ? opacity : opacity * 0.2;
+    
+    // Fondo de la flecha
+    ctx.fillStyle = isVisible ? color : "#1a1a1a";
+    ctx.strokeStyle = isVisible ? color : "#333";
+    ctx.lineWidth = 4;
     
     ctx.translate(x, y);
     
-    // Rotar según dirección
+    // Ángulo de rotación según dirección
     const angles = {
         "up": 0,
         "right": Math.PI / 2,
@@ -350,38 +403,53 @@ function drawArrow(x, y, size, direction, visible, opacity = 1) {
     };
     ctx.rotate(angles[direction]);
     
-    // Dibujar flecha
-    ctx.fillStyle = "white";
-    ctx.strokeStyle = "white";
-    ctx.lineWidth = 3;
-    
-    // Triángulo (punta)
+    // Dibujar triángulo grande (punta)
     ctx.beginPath();
     ctx.moveTo(0, -size);
-    ctx.lineTo(-size / 2, size / 2);
-    ctx.lineTo(size / 2, size / 2);
+    ctx.lineTo(-size * 0.6, size * 0.4);
+    ctx.lineTo(-size * 0.3, size * 0.4);
+    ctx.lineTo(-size * 0.3, size);
+    ctx.lineTo(size * 0.3, size);
+    ctx.lineTo(size * 0.3, size * 0.4);
+    ctx.lineTo(size * 0.6, size * 0.4);
     ctx.closePath();
-    ctx.fill();
-    ctx.stroke();
     
-    // Línea (cuerpo)
-    ctx.beginPath();
-    ctx.moveTo(0, size / 2);
-    ctx.lineTo(0, size);
+    ctx.fill();
     ctx.stroke();
     
     ctx.restore();
 }
 
-// ---------------------- FUNCIÓN PARA CALCULAR VISIBILIDAD SSVEP ----------------------
-function calculateSSVEPVisibility(time, freq) {
-    // Usa una onda cuadrada pura para el efecto de parpadeo
-    const period = 1000 / freq; // ms
-    const phase = (time % period) / period;
-    return phase < 0.5 ? 1 : 0; // Visible en la primera mitad del período
+// ==================== DIBUJAR BORDE CIRCULAR ====================
+function drawCircularBorder(x, y, radius, isVisible, color) {
+    ctx.save();
+    
+    ctx.strokeStyle = isVisible ? color : "#333";
+    ctx.lineWidth = isVisible ? 4 : 2;
+    ctx.globalAlpha = isVisible ? 0.8 : 0.3;
+    
+    ctx.beginPath();
+    ctx.arc(x, y, radius, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    ctx.restore();
 }
 
-// ---------------------- ANIMACIÓN PRINCIPAL ----------------------
+// ==================== DIBUJAR FRECUENCIA ====================
+function drawFrequencyLabel(x, y, freq, isVisible, color) {
+    ctx.save();
+    
+    ctx.fillStyle = isVisible ? color : "#666";
+    ctx.font = "bold 20px Arial";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+    
+    ctx.fillText(`${freq} Hz`, x, y + 80);
+    
+    ctx.restore();
+}
+
+// ==================== ANIMACIÓN PRINCIPAL ====================
 let startTime = null;
 
 function animate(ts) {
@@ -392,48 +460,50 @@ function animate(ts) {
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    const showArrows = document.getElementById("show-arrows").checked;
-    const arrowSize = Math.min(canvas.width, canvas.height) * 0.08;
+    const centerX = canvas.width / 2;
+    const centerY = canvas.height / 2;
+    const scale = Math.min(canvas.width, canvas.height) / 1.5;
+    const arrowSize = scale * 0.25;
+    const borderRadius = scale * 0.3;
+    
+    const showFreq = document.getElementById("show-freq").checked;
+    const showBorders = document.getElementById("show-borders").checked;
     
     // Dibujar cada estímulo
-    for (let stimulus of stimuli) {
+    stimuli.forEach(stimulus => {
         const visibility = calculateSSVEPVisibility(elapsed, stimulus.freq);
-        const x = canvas.width * stimulus.x;
-        const y = canvas.height * stimulus.y;
+        const x = centerX + (stimulus.x - 0.5) * scale;
+        const y = centerY + (stimulus.y - 0.5) * scale;
         
-        if (showArrows) {
-            drawArrow(x, y, arrowSize, stimulus.direction, visibility > 0.5, visibility);
-        } else {
-            // Si no muestras flechas, dibuja un círculo parpadeante
-            ctx.fillStyle = visibility > 0.5 ? "white" : "#333";
-            ctx.beginPath();
-            ctx.arc(x, y, arrowSize * 1.2, 0, Math.PI * 2);
-            ctx.fill();
+        // Dibujar borde circular
+        if (showBorders) {
+            drawCircularBorder(x, y, borderRadius, visibility > 0.5, stimulus.color);
         }
         
-        // Dibujar información de frecuencia (opcional)
-        if (document.getElementById("show-info").checked) {
-            ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
-            ctx.font = "12px Arial";
-            ctx.textAlign = "center";
-            ctx.fillText(`${stimulus.freq} Hz`, canvas.width * stimulus.x, canvas.height * stimulus.y + arrowSize * 2.2);
+        // Dibujar flecha grande
+        drawLargeArrow(x, y, arrowSize, stimulus.direction, visibility > 0.5, stimulus.color);
+        
+        // Dibujar etiqueta de frecuencia
+        if (showFreq) {
+            drawFrequencyLabel(x, y, stimulus.freq, visibility > 0.5, stimulus.color);
         }
-    }
+    });
     
     if (isRunning) {
         animation = requestAnimationFrame(animate);
     }
 }
 
-// ---------------------- CONTROL DE ESTÍMULOS ----------------------
+// ==================== CONTROLES ====================
 function startStimuli() {
     if (isRunning) return;
     
     isRunning = true;
     startTime = null;
     
-    document.getElementById("status-text").textContent = "▶ En ejecución";
-    document.getElementById("status-text").style.color = "#00ff00";
+    const statusText = document.getElementById("status-text");
+    statusText.textContent = "🟢 En ejecución";
+    statusText.style.color = "#00ff00";
     
     animate(performance.now());
 }
@@ -445,23 +515,24 @@ function stopStimuli() {
         cancelAnimationFrame(animation);
     }
     
-    document.getElementById("status-text").textContent = "Detenido";
-    document.getElementById("status-text").style.color = "#ffffff";
+    const statusText = document.getElementById("status-text");
+    statusText.textContent = "🔴 Detenido";
+    statusText.style.color = "#ff6b6b";
     
     // Limpiar canvas
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 }
 
-// ---------------------- MOSTRAR/OCULTAR INFO ----------------------
-document.getElementById("show-info").addEventListener("change", function() {
+// ==================== EVENT LISTENERS ====================
+document.getElementById("show-freq").addEventListener("change", function() {
     if (!isRunning) {
         ctx.fillStyle = "black";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 });
 
-document.getElementById("show-arrows").addEventListener("change", function() {
+document.getElementById("show-borders").addEventListener("change", function() {
     if (!isRunning) {
         ctx.fillStyle = "black";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
