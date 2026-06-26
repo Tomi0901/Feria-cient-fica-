@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Comunicación Cerebro-Computador - 4 Estímulos SSVEP</title>
+<title>Comunicación Cerebro-Computador - SSVEP</title>
 
 <style>
     * {
@@ -76,22 +76,22 @@
         background: #cc0000;
     }
 
-    /* ---------------------- MENÚ ---------------------- */
+    /* ---------------------- MENÚ LATERAL ---------------------- */
     #menu {
         position: fixed;
         top: 0;
         left: 0;
-        width: 300px;
+        width: 320px;
         height: 100vh;
-        background: #000;
-        border-right: 2px solid #222;
+        background: #0a0a0a;
+        border-right: 2px solid #333;
         padding: 20px;
         overflow-y: auto;
         z-index: 100;
     }
 
     #menu h1 {
-        font-size: 1.4rem;
+        font-size: 1.5rem;
         line-height: 1.3;
         margin-top: 0;
         margin-bottom: 20px;
@@ -103,46 +103,51 @@
 
     #menu h3 {
         margin-top: 20px;
-        margin-bottom: 10px;
-        color: #0099ff;
+        margin-bottom: 12px;
+        color: #00ccff;
         font-size: 0.95rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
     }
 
+    /* ---------------------- BOTONES ---------------------- */
     #menu button {
         width: 100%;
-        padding: 12px;
+        padding: 14px;
         margin: 8px 0;
-        background: #222;
+        background: #1a1a1a;
         color: white;
-        border: 1px solid #444;
+        border: 2px solid #333;
         cursor: pointer;
-        border-radius: 6px;
-        font-size: 14px;
-        transition: 0.2s;
+        border-radius: 8px;
+        font-size: 15px;
         font-weight: bold;
+        transition: 0.3s;
     }
 
     #menu button:hover {
-        background: #333;
-        border-color: #0099ff;
+        background: #222;
+        border-color: #00ccff;
+    }
+
+    #start-button {
+        background: #00cc00;
+        border-color: #00ff00;
+        color: #000;
+    }
+
+    #start-button:hover {
+        background: #00ff00;
     }
 
     #stop-button {
-        width: 100%;
-        padding: 12px;
-        margin: 15px 0;
         background: #cc0000;
+        border-color: #ff0000;
         color: white;
-        border: none;
-        cursor: pointer;
-        border-radius: 6px;
-        font-size: 14px;
-        font-weight: bold;
-        transition: 0.2s;
     }
 
     #stop-button:hover {
-        background: #990000;
+        background: #ff0000;
     }
 
     /* ---------------------- ESTADO ---------------------- */
@@ -150,41 +155,71 @@
         margin: 20px 0;
         padding: 15px;
         background: #1a1a1a;
-        border-left: 3px solid #0099ff;
+        border-left: 3px solid #00ccff;
         border-radius: 4px;
-        font-size: 12px;
+        font-size: 13px;
         line-height: 1.8;
     }
 
     #status strong {
-        color: #0099ff;
+        color: #00ccff;
         display: block;
         margin-bottom: 8px;
     }
 
     #status-text {
-        display: block;
-        font-size: 13px;
-        margin-bottom: 12px;
+        font-size: 14px;
         font-weight: bold;
+        color: #888;
     }
 
-    .freq-item {
+    /* ---------------------- CHECKBOXES DE FRECUENCIAS ---------------------- */
+    #freq-controls {
+        margin: 15px 0;
+        padding: 15px;
+        background: #1a1a1a;
+        border-left: 3px solid #ffaa00;
+        border-radius: 4px;
+    }
+
+    #freq-controls strong {
+        color: #ffaa00;
+        display: block;
+        margin-bottom: 10px;
+    }
+
+    .freq-checkbox {
         display: flex;
         align-items: center;
-        margin: 5px 0;
-        font-size: 13px;
+        margin: 8px 0;
+        padding: 8px;
+        background: #0a0a0a;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: 0.2s;
     }
 
-    .freq-item .arrow {
-        font-size: 16px;
-        margin-right: 8px;
-        min-width: 20px;
+    .freq-checkbox:hover {
+        background: #222;
     }
 
-    .freq-item .freq-value {
+    .freq-checkbox input[type="checkbox"] {
+        margin-right: 10px;
+        cursor: pointer;
+        width: 18px;
+        height: 18px;
+    }
+
+    .freq-checkbox label {
+        cursor: pointer;
+        flex: 1;
+        font-size: 14px;
+    }
+
+    .freq-value {
         color: #00ff00;
         font-weight: bold;
+        margin-left: auto;
     }
 
     /* ---------------------- AUTORES ---------------------- */
@@ -193,8 +228,8 @@
         padding-top: 15px;
         border-top: 1px solid #333;
         font-size: 10px;
-        line-height: 1.5;
-        color: #999;
+        line-height: 1.6;
+        color: #888;
         word-break: break-word;
     }
 
@@ -206,14 +241,11 @@
     /* ---------------------- CANVAS ---------------------- */
     #view {
         position: absolute;
-        left: 300px;
+        left: 320px;
         top: 0;
-        width: calc(100vw - 300px);
+        width: calc(100vw - 320px);
         height: 100vh;
         background: black;
-        display: flex;
-        justify-content: center;
-        align-items: center;
     }
 
     canvas {
@@ -255,49 +287,44 @@
 <div id="menu">
     <h1>🧠 SSVEP</h1>
 
-    <h3>▶ Control</h3>
-    <button onclick="startStimuli()">▶ INICIAR</button>
+    <h3>▶ Control Principal</h3>
+    <button id="start-button" onclick="startStimuli()">▶ INICIAR</button>
     <button id="stop-button" onclick="stopStimuli()">⏹ DETENER</button>
 
-    <!-- ESTADO Y FRECUENCIAS -->
+    <!-- ESTADO -->
     <div id="status">
         <strong>Estado:</strong>
         <span id="status-text">🔴 Detenido</span>
+    </div>
 
-        <strong style="margin-top: 12px;">Frecuencias SSVEP:</strong>
+    <!-- CONTROLES POR FRECUENCIA -->
+    <div id="freq-controls">
+        <strong>🎯 Activar Frecuencias:</strong>
         
-        <div class="freq-item">
-            <span class="arrow">⬆️</span>
-            <span>Adelante:</span>
+        <div class="freq-checkbox">
+            <input type="checkbox" id="freq-10" checked>
+            <label for="freq-10">⬆️ Adelante</label>
             <span class="freq-value">10 Hz</span>
         </div>
         
-        <div class="freq-item">
-            <span class="arrow">⬇️</span>
-            <span>Atrás:</span>
+        <div class="freq-checkbox">
+            <input type="checkbox" id="freq-12" checked>
+            <label for="freq-12">⬇️ Atrás</label>
             <span class="freq-value">12 Hz</span>
         </div>
         
-        <div class="freq-item">
-            <span class="arrow">⬅️</span>
-            <span>Izquierda:</span>
+        <div class="freq-checkbox">
+            <input type="checkbox" id="freq-15" checked>
+            <label for="freq-15">⬅️ Izquierda</label>
             <span class="freq-value">15 Hz</span>
         </div>
         
-        <div class="freq-item">
-            <span class="arrow">➡️</span>
-            <span>Derecha:</span>
+        <div class="freq-checkbox">
+            <input type="checkbox" id="freq-20" checked>
+            <label for="freq-20">➡️ Derecha</label>
             <span class="freq-value">20 Hz</span>
         </div>
     </div>
-
-    <h3>⚙️ Opciones</h3>
-    <label style="display: block; margin: 10px 0; font-size: 12px; cursor: pointer;">
-        <input type="checkbox" id="show-freq" checked> Mostrar frecuencias
-    </label>
-    <label style="display: block; margin: 10px 0; font-size: 12px; cursor: pointer;">
-        <input type="checkbox" id="show-borders" checked> Mostrar bordes
-    </label>
 
     <!-- AUTORES Y PROFESORES -->
     <div id="credits">
@@ -342,37 +369,33 @@ const stimuli = [
         id: "up",
         freq: 10, 
         direction: "up", 
-        label: "⬆️ ADELANTE",
         x: 0.5, 
-        y: 0.25,
-        color: "#FF6B6B"
+        y: 0.15,
+        checkboxId: "freq-10"
     },
     { 
         id: "down",
         freq: 12, 
         direction: "down", 
-        label: "⬇️ ATRÁS",
         x: 0.5, 
-        y: 0.75,
-        color: "#4ECDC4"
+        y: 0.85,
+        checkboxId: "freq-12"
     },
     { 
         id: "left",
         freq: 15, 
         direction: "left", 
-        label: "⬅️ IZQUIERDA",
-        x: 0.25, 
+        x: 0.15, 
         y: 0.5,
-        color: "#FFE66D"
+        checkboxId: "freq-15"
     },
     { 
         id: "right",
         freq: 20, 
         direction: "right", 
-        label: "➡️ DERECHA",
-        x: 0.75, 
+        x: 0.85, 
         y: 0.5,
-        color: "#95E1D3"
+        checkboxId: "freq-20"
     }
 ];
 
@@ -380,17 +403,17 @@ const stimuli = [
 function calculateSSVEPVisibility(time, freq) {
     const period = 1000 / freq;
     const phase = (time % period) / period;
-    return phase < 0.5 ? 1 : 0;
+    return phase < 0.5 ? 1 : 0; // Blanco o Negro
 }
 
 // ==================== DIBUJAR FLECHA GRANDE ====================
-function drawLargeArrow(x, y, size, direction, isVisible, color) {
+function drawLargeArrow(x, y, size, direction, isVisible) {
     ctx.save();
     
-    // Fondo de la flecha
-    ctx.fillStyle = isVisible ? color : "#1a1a1a";
-    ctx.strokeStyle = isVisible ? color : "#333";
-    ctx.lineWidth = 4;
+    // Color: Blanco si es visible, gris oscuro si no
+    ctx.fillStyle = isVisible ? "white" : "#2a2a2a";
+    ctx.strokeStyle = isVisible ? "white" : "#2a2a2a";
+    ctx.lineWidth = 3;
     
     ctx.translate(x, y);
     
@@ -403,48 +426,29 @@ function drawLargeArrow(x, y, size, direction, isVisible, color) {
     };
     ctx.rotate(angles[direction]);
     
-    // Dibujar triángulo grande (punta)
+    // Dibujar flecha grande (cuerpo + punta)
     ctx.beginPath();
-    ctx.moveTo(0, -size);
-    ctx.lineTo(-size * 0.6, size * 0.4);
-    ctx.lineTo(-size * 0.3, size * 0.4);
-    ctx.lineTo(-size * 0.3, size);
-    ctx.lineTo(size * 0.3, size);
-    ctx.lineTo(size * 0.3, size * 0.4);
-    ctx.lineTo(size * 0.6, size * 0.4);
+    ctx.moveTo(0, -size);                    // Punta superior
+    ctx.lineTo(-size * 0.5, size * 0.3);     // Esquina superior izquierda
+    ctx.lineTo(-size * 0.25, size * 0.3);    // Esquina del cuerpo izquierda
+    ctx.lineTo(-size * 0.25, size);          // Fondo izquierda
+    ctx.lineTo(size * 0.25, size);           // Fondo derecha
+    ctx.lineTo(size * 0.25, size * 0.3);     // Esquina del cuerpo derecha
+    ctx.lineTo(size * 0.5, size * 0.3);      // Esquina superior derecha
     ctx.closePath();
     
     ctx.fill();
     ctx.stroke();
     
-    ctx.restore();
-}
-
-// ==================== DIBUJAR BORDE CIRCULAR ====================
-function drawCircularBorder(x, y, radius, isVisible, color) {
+    // Dibujar frecuencia en la flecha
     ctx.save();
-    
-    ctx.strokeStyle = isVisible ? color : "#333";
-    ctx.lineWidth = isVisible ? 4 : 2;
-    ctx.globalAlpha = isVisible ? 0.8 : 0.3;
-    
-    ctx.beginPath();
-    ctx.arc(x, y, radius, 0, Math.PI * 2);
-    ctx.stroke();
-    
-    ctx.restore();
-}
-
-// ==================== DIBUJAR FRECUENCIA ====================
-function drawFrequencyLabel(x, y, freq, isVisible, color) {
-    ctx.save();
-    
-    ctx.fillStyle = isVisible ? color : "#666";
-    ctx.font = "bold 20px Arial";
+    ctx.rotate(-angles[direction]); // Desrotar para que el texto esté derecho
+    ctx.fillStyle = isVisible ? "black" : "#555";
+    ctx.font = "bold 14px Arial";
     ctx.textAlign = "center";
-    ctx.textBaseline = "top";
-    
-    ctx.fillText(`${freq} Hz`, x, y + 80);
+    ctx.textBaseline = "middle";
+    ctx.fillText(`${stimuli.find(s => s.direction === direction).freq} Hz`, 0, 0);
+    ctx.restore();
     
     ctx.restore();
 }
@@ -460,32 +464,18 @@ function animate(ts) {
     ctx.fillStyle = "black";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    const centerX = canvas.width / 2;
-    const centerY = canvas.height / 2;
-    const scale = Math.min(canvas.width, canvas.height) / 1.5;
-    const arrowSize = scale * 0.25;
-    const borderRadius = scale * 0.3;
+    const arrowSize = Math.min(canvas.width, canvas.height) * 0.12;
     
-    const showFreq = document.getElementById("show-freq").checked;
-    const showBorders = document.getElementById("show-borders").checked;
-    
-    // Dibujar cada estímulo
+    // Dibujar cada estímulo si está activado
     stimuli.forEach(stimulus => {
-        const visibility = calculateSSVEPVisibility(elapsed, stimulus.freq);
-        const x = centerX + (stimulus.x - 0.5) * scale;
-        const y = centerY + (stimulus.y - 0.5) * scale;
+        const isEnabled = document.getElementById(stimulus.checkboxId).checked;
         
-        // Dibujar borde circular
-        if (showBorders) {
-            drawCircularBorder(x, y, borderRadius, visibility > 0.5, stimulus.color);
-        }
-        
-        // Dibujar flecha grande
-        drawLargeArrow(x, y, arrowSize, stimulus.direction, visibility > 0.5, stimulus.color);
-        
-        // Dibujar etiqueta de frecuencia
-        if (showFreq) {
-            drawFrequencyLabel(x, y, stimulus.freq, visibility > 0.5, stimulus.color);
+        if (isEnabled) {
+            const visibility = calculateSSVEPVisibility(elapsed, stimulus.freq);
+            const x = canvas.width * stimulus.x;
+            const y = canvas.height * stimulus.y;
+            
+            drawLargeArrow(x, y, arrowSize, stimulus.direction, visibility > 0.5);
         }
     });
     
@@ -525,18 +515,14 @@ function stopStimuli() {
 }
 
 // ==================== EVENT LISTENERS ====================
-document.getElementById("show-freq").addEventListener("change", function() {
-    if (!isRunning) {
-        ctx.fillStyle = "black";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
-});
-
-document.getElementById("show-borders").addEventListener("change", function() {
-    if (!isRunning) {
-        ctx.fillStyle = "black";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-    }
+// Cuando se cambian los checkboxes de frecuencias
+document.querySelectorAll('.freq-checkbox input[type="checkbox"]').forEach(checkbox => {
+    checkbox.addEventListener("change", function() {
+        if (!isRunning) {
+            ctx.fillStyle = "black";
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+    });
 });
 
 // Limpieza al cerrar
