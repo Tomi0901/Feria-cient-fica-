@@ -3,11 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Comunicación Cerebro-Computador en base a estímulos visuales</title>
+<title>Comunicación Cerebro-Computador - 4 Estímulos SSVEP</title>
 
 <style>
-    body {
+    * {
         margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
         font-family: Arial, sans-serif;
         background: #111;
         color: white;
@@ -82,7 +87,7 @@
         border-right: 2px solid #222;
         padding: 20px;
         overflow-y: auto;
-        box-sizing: border-box;
+        z-index: 100;
     }
 
     #menu h1 {
@@ -100,6 +105,7 @@
         margin-top: 20px;
         margin-bottom: 10px;
         color: #ffffff;
+        font-size: 0.95rem;
     }
 
     #menu button {
@@ -112,10 +118,49 @@
         cursor: pointer;
         border-radius: 6px;
         font-size: 15px;
+        transition: 0.2s;
     }
 
     #menu button:hover {
         background: #333;
+    }
+
+    #menu button.active {
+        background: #0066cc;
+        border-color: #0099ff;
+    }
+
+    #stop-button {
+        width: 100%;
+        padding: 12px;
+        margin: 15px 0;
+        background: #cc0000;
+        color: white;
+        border: none;
+        cursor: pointer;
+        border-radius: 6px;
+        font-size: 15px;
+        font-weight: bold;
+        transition: 0.2s;
+    }
+
+    #stop-button:hover {
+        background: #990000;
+    }
+
+    /* ---------------------- ESTADO ---------------------- */
+    #status {
+        margin: 20px 0;
+        padding: 15px;
+        background: #1a1a1a;
+        border-left: 3px solid #0099ff;
+        border-radius: 4px;
+        font-size: 13px;
+        line-height: 1.6;
+    }
+
+    #status strong {
+        color: #0099ff;
     }
 
     /* ---------------------- AUTORES ---------------------- */
@@ -133,7 +178,7 @@
         color: #ffffff;
     }
 
-    /* ---------------------- VISUALIZACIÓN ---------------------- */
+    /* ---------------------- CANVAS ---------------------- */
     #view {
         position: absolute;
         left: 320px;
@@ -146,6 +191,33 @@
     canvas {
         width: 100%;
         height: 100%;
+        display: block;
+    }
+
+    /* ---------------------- INFO OVERLAY ---------------------- */
+    #info-overlay {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.8);
+        border: 1px solid #333;
+        border-radius: 8px;
+        padding: 15px 20px;
+        font-size: 14px;
+        color: #aaa;
+        pointer-events: none;
+        z-index: 50;
+    }
+
+    #info-overlay .freq-info {
+        margin: 5px 0;
+        font-family: monospace;
+    }
+
+    #info-overlay .freq-info strong {
+        color: #0099ff;
+        min-width: 80px;
+        display: inline-block;
     }
 </style>
 </head>
@@ -168,7 +240,7 @@
 
         <p>
             Si tienes antecedentes de epilepsia fotosensible, migrañas o
-            sensibilidad a la luz, se recomienda no continuar.
+            sensibilidad a la luz, se recomienda <strong>no continuar</strong>.
         </p>
 
         <button onclick="closeWarning()">
@@ -180,21 +252,31 @@
 <!-- MENÚ -->
 <div id="menu">
     <h1>
-        Comunicación Cerebro-Computador<br>
-        en base a estímulos visuales
+        SSVEP<br>
+        4 Estímulos Sincronizados
     </h1>
 
-    <h3>🔳 Estímulos Visuales</h3>
-    <button onclick="runStimulus(10)">Estímulo 10 Hz</button>
-    <button onclick="runStimulus(12)">Estímulo 12 Hz</button>
-    <button onclick="runStimulus(15)">Estímulo 15 Hz</button>
-    <button onclick="runStimulus(20)">Estímulo 20 Hz</button>
+    <h3>▶ Estímulos Parpadeantes</h3>
+    <button onclick="startStimuli()" class="active">Iniciar Estímulos</button>
+    <button id="stop-button" onclick="stopStimuli()">Detener</button>
 
-    <h3>📈 Funciones Sinusoidales</h3>
-    <button onclick="runWave(10)">Función 10 Hz</button>
-    <button onclick="runWave(12)">Función 12 Hz</button>
-    <button onclick="runWave(15)">Función 15 Hz</button>
-    <button onclick="runWave(20)">Función 20 Hz</button>
+    <div id="status">
+        <strong>Estado:</strong><br>
+        <span id="status-text">Detenido</span><br><br>
+        <strong>Frecuencias:</strong><br>
+        ↑ Arriba: 10 Hz<br>
+        ← Izquierda: 15 Hz<br>
+        → Derecha: 20 Hz<br>
+        ↓ Abajo: 12 Hz
+    </div>
+
+    <h3>⚙ Configuración</h3>
+    <label style="display: block; margin: 10px 0; font-size: 13px;">
+        <input type="checkbox" id="show-arrows" checked> Mostrar flechas
+    </label>
+    <label style="display: block; margin: 10px 0; font-size: 13px;">
+        <input type="checkbox" id="show-info" checked> Mostrar info
+    </label>
 
     <!-- AUTORES Y PROFESORES -->
     <div id="credits">
@@ -217,6 +299,12 @@
 <!-- CANVAS -->
 <div id="view">
     <canvas id="canvas"></canvas>
+    <div id="info-overlay">
+        <div class="freq-info"><strong>↑ Arriba</strong>: 10 Hz</div>
+        <div class="freq-info"><strong>← Izq</strong>: 15 Hz</div>
+        <div class="freq-info"><strong>→ Der</strong>: 20 Hz</div>
+        <div class="freq-info"><strong>↓ Abajo</strong>: 12 Hz</div>
+    </div>
 </div>
 
 <script>
@@ -228,6 +316,8 @@ function closeWarning() {
 // ---------------------- CANVAS ----------------------
 const canvas = document.getElementById("canvas");
 const ctx = canvas.getContext("2d");
+let animation = null;
+let isRunning = false;
 
 function resize() {
     canvas.width = canvas.clientWidth;
@@ -236,70 +326,152 @@ function resize() {
 resize();
 window.addEventListener("resize", resize);
 
-let animation = null;
+// ---------------------- CONFIGURACIÓN DE ESTÍMULOS ----------------------
+const stimuli = [
+    { freq: 10, direction: "up", x: 0.5, y: 0.2, arrow: "↑" },
+    { freq: 15, direction: "left", x: 0.2, y: 0.5, arrow: "←" },
+    { freq: 20, direction: "right", x: 0.8, y: 0.5, arrow: "→" },
+    { freq: 12, direction: "down", x: 0.5, y: 0.8, arrow: "↓" }
+];
 
-// ---------------------- ESTÍMULO VISUAL ----------------------
-function runStimulus(freq) {
-    cancelAnimationFrame(animation);
+// ---------------------- FUNCIÓN PARA DIBUJAR FLECHAS ----------------------
+function drawArrow(x, y, size, direction, visible, opacity = 1) {
+    ctx.save();
+    ctx.globalAlpha = visible ? opacity : opacity * 0.2;
+    
+    ctx.translate(x, y);
+    
+    // Rotar según dirección
+    const angles = {
+        "up": 0,
+        "right": Math.PI / 2,
+        "down": Math.PI,
+        "left": (3 * Math.PI) / 2
+    };
+    ctx.rotate(angles[direction]);
+    
+    // Dibujar flecha
+    ctx.fillStyle = "white";
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 3;
+    
+    // Triángulo (punta)
+    ctx.beginPath();
+    ctx.moveTo(0, -size);
+    ctx.lineTo(-size / 2, size / 2);
+    ctx.lineTo(size / 2, size / 2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+    
+    // Línea (cuerpo)
+    ctx.beginPath();
+    ctx.moveTo(0, size / 2);
+    ctx.lineTo(0, size);
+    ctx.stroke();
+    
+    ctx.restore();
+}
 
-    let last = null;
-    let visible = false;
-    const interval = 1000 / (freq * 2);
+// ---------------------- FUNCIÓN PARA CALCULAR VISIBILIDAD SSVEP ----------------------
+function calculateSSVEPVisibility(time, freq) {
+    // Usa una onda cuadrada pura para el efecto de parpadeo
+    const period = 1000 / freq; // ms
+    const phase = (time % period) / period;
+    return phase < 0.5 ? 1 : 0; // Visible en la primera mitad del período
+}
 
-    function drawStimulus(ts) {
-        if (!last) last = ts;
-        const diff = ts - last;
+// ---------------------- ANIMACIÓN PRINCIPAL ----------------------
+let startTime = null;
 
-        if (diff >= interval) {
-            visible = !visible;
-            last = ts;
+function animate(ts) {
+    if (!startTime) startTime = ts;
+    const elapsed = ts - startTime;
+    
+    // Limpiar canvas
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    const showArrows = document.getElementById("show-arrows").checked;
+    const arrowSize = Math.min(canvas.width, canvas.height) * 0.08;
+    
+    // Dibujar cada estímulo
+    for (let stimulus of stimuli) {
+        const visibility = calculateSSVEPVisibility(elapsed, stimulus.freq);
+        const x = canvas.width * stimulus.x;
+        const y = canvas.height * stimulus.y;
+        
+        if (showArrows) {
+            drawArrow(x, y, arrowSize, stimulus.direction, visibility > 0.5, visibility);
+        } else {
+            // Si no muestras flechas, dibuja un círculo parpadeante
+            ctx.fillStyle = visibility > 0.5 ? "white" : "#333";
+            ctx.beginPath();
+            ctx.arc(x, y, arrowSize * 1.2, 0, Math.PI * 2);
+            ctx.fill();
         }
+        
+        // Dibujar información de frecuencia (opcional)
+        if (document.getElementById("show-info").checked) {
+            ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+            ctx.font = "12px Arial";
+            ctx.textAlign = "center";
+            ctx.fillText(`${stimulus.freq} Hz`, canvas.width * stimulus.x, canvas.height * stimulus.y + arrowSize * 2.2);
+        }
+    }
+    
+    if (isRunning) {
+        animation = requestAnimationFrame(animate);
+    }
+}
 
-        ctx.fillStyle = visible ? "white" : "black";
+// ---------------------- CONTROL DE ESTÍMULOS ----------------------
+function startStimuli() {
+    if (isRunning) return;
+    
+    isRunning = true;
+    startTime = null;
+    
+    document.getElementById("status-text").textContent = "▶ En ejecución";
+    document.getElementById("status-text").style.color = "#00ff00";
+    
+    animate(performance.now());
+}
+
+function stopStimuli() {
+    isRunning = false;
+    
+    if (animation) {
+        cancelAnimationFrame(animation);
+    }
+    
+    document.getElementById("status-text").textContent = "Detenido";
+    document.getElementById("status-text").style.color = "#ffffff";
+    
+    // Limpiar canvas
+    ctx.fillStyle = "black";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+}
+
+// ---------------------- MOSTRAR/OCULTAR INFO ----------------------
+document.getElementById("show-info").addEventListener("change", function() {
+    if (!isRunning) {
+        ctx.fillStyle = "black";
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        animation = requestAnimationFrame(drawStimulus);
     }
+});
 
-    animation = requestAnimationFrame(drawStimulus);
-}
-
-// ---------------------- FUNCIÓN SINUSOIDAL ----------------------
-function runWave(freq) {
-    cancelAnimationFrame(animation);
-
-    const A = 0.149;
-    const offset = 0.464;
-    const fase = Math.PI / 2;
-
-    let start = null;
-
-    function drawWave(ts) {
-        if (!start) start = ts;
-        const t = (ts - start) / 1000;
-
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-        ctx.beginPath();
-        ctx.strokeStyle = "white";
-        ctx.lineWidth = 3;
-
-        for (let x = 0; x < canvas.width; x++) {
-            const tt = t + x / canvas.width;
-            const y = A * Math.sin(2 * Math.PI * freq * tt + fase) + offset;
-            const y_px = canvas.height - y * canvas.height;
-
-            if (x === 0) ctx.moveTo(x, y_px);
-            else ctx.lineTo(x, y_px);
-        }
-
-        ctx.stroke();
-
-        animation = requestAnimationFrame(drawWave);
+document.getElementById("show-arrows").addEventListener("change", function() {
+    if (!isRunning) {
+        ctx.fillStyle = "black";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
+});
 
-    animation = requestAnimationFrame(drawWave);
-}
+// Limpieza al cerrar
+window.addEventListener("beforeunload", () => {
+    if (isRunning) stopStimuli();
+});
 </script>
 
 </body>
